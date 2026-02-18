@@ -3,22 +3,52 @@ services:
     image: spaneng/doover_device_agent:apps
     network_mode: host
 
-  sample_simulator:
+  pt1_simulator:
     build: ./sample
     network_mode: host
     restart: unless-stopped
     depends_on:
       - device_agent
     environment:
-      - APP_KEY=sim_app_key
+      - APP_KEY=pt1_sim
 
-  sample_application:
+  pt2_simulator:
+    build: ./sample
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - device_agent
+    environment:
+      - APP_KEY=pt2_sim
+
+  temp_simulator:
+    build: ./sample
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - device_agent
+    environment:
+      - APP_KEY=temp_sim
+
+  dp_simulator:
+    build: ./sample
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - device_agent
+    environment:
+      - APP_KEY=dp_sim
+
+  hpu_controller:
     build: ../
     network_mode: host
     restart: unless-stopped
     depends_on:
       - device_agent
-      - sample_simulator
+      - pt1_simulator
+      - pt2_simulator
+      - temp_simulator
+      - dp_simulator
     environment:
-      - APP_KEY=test_app_key
+      - APP_KEY=hpu_controller
       - CONFIG_FP=/app/simulators/app_config.json

@@ -1,7 +1,7 @@
 [project]
 name = "hydraulic-power-pack-control"
 version = "0.1.0"
-description = "Add your description here"
+description = "Hydraulic Power Unit controller for Imtex PST systems. Controls hydraulic actuator valve actuation with 4x 4-20mA sensor inputs, pressure band control, redundant pump logic, and alarm management."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

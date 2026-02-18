@@ -1,10 +1,9 @@
 from pydoover.docker import run_app
 
-from .application import HydraulicPowerPackControlApplication
-from .app_config import HydraulicPowerPackControlConfig
+from .application import ImtexHPUApplication
+from .app_config import ImtexHPUConfig
+
 
 def main():
-    """
-    Run the application.
-    """
-    run_app(HydraulicPowerPackControlApplication(config=HydraulicPowerPackControlConfig()))
+    """Run the Imtex HPU Controller application."""
+    run_app(ImtexHPUApplication(config=ImtexHPUConfig()))

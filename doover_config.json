@@ -1,51 +1,323 @@
 {
     "hydraulic_power_pack_control": {
         "name": "hydraulic_power_pack_control",
-        "display_name": "hydraulic-power-pack-control",
+        "display_name": "Hydraulic Power Pack Control",
         "type": "DEV",
         "visibility": "PUB",
         "allow_many": true,
         "description": "Hydraulic Power Unit controller for Imtex PST systems. Controls hydraulic actuator valve actuation with 4x 4-20mA sensor inputs, pressure band control, redundant pump logic, and alarm management.",
         "long_description": "README.md",
-        "depends_on": [],
-        "owner_org_key": "FIX-ME",
-        "image_name": "ghcr.io/getdoover/hydraulic-power-pack-control:main",
-        "container_registry_profile_key": "FIX-ME",
+        "depends_on": [
+            "platform_interface"
+        ],
+        "owner_org_key": "",
+        "image_name": "ghcr.io/getdoover/hydraulic_power_pack_control:main",
+        "container_registry_profile_key": "",
         "build_args": "--platform linux/amd64,linux/arm64",
+        "lambda_config": {},
+        "organisation_id": null,
+        "key": null,
+        "owner_org_id": null,
+        "code_repo_id": null,
+        "container_registry_profile_id": null,
+        "repo_branch": "main",
+        "icon_url": "https://imtex-controls.com/wp-content/uploads/2018/11/imtexcontrols-Logo-4colour.png",
+        "staging_config": {},
+        "export_config_command": null,
+        "run_command": null,
+        "lambda_arn": null,
         "config_schema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "$id": "",
             "title": "Application Config",
             "type": "object",
             "properties": {
-                "digital_outputs_enabled": {
-                    "title": "Digital Outputs Enabled",
-                    "x-name": "digital_outputs_enabled",
+                "enable_pump_2_(redundant)": {
+                    "title": "Enable Pump 2 (Redundant)",
+                    "x-name": "enable_pump_2_(redundant)",
                     "x-hidden": false,
                     "type": "boolean",
+                    "description": "Enable redundant Pump 2 with automatic failover",
                     "default": true
                 },
-                "a_funny_message": {
-                    "title": "A Funny Message",
-                    "x-name": "a_funny_message",
+                "enable_vfd_speed_control": {
+                    "title": "Enable VFD Speed Control",
+                    "x-name": "enable_vfd_speed_control",
                     "x-hidden": false,
-                    "type": "string"
+                    "type": "boolean",
+                    "description": "Enable VFD speed control for motor modulation",
+                    "default": false
                 },
-                "simulator_app_key": {
+                "pressure_upper_band_(bar)": {
+                    "title": "Pressure Upper Band (bar)",
+                    "x-name": "pressure_upper_band_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Upper pressure threshold (bar) to stop pumping. Range 0-500.",
+                    "default": 200.0,
+                    "minimum": 0.0,
+                    "maximum": 500.0
+                },
+                "pressure_lower_band_(bar)": {
+                    "title": "Pressure Lower Band (bar)",
+                    "x-name": "pressure_lower_band_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Lower pressure threshold (bar) to start pumping. Range 0-500.",
+                    "default": 180.0,
+                    "minimum": 0.0,
+                    "maximum": 500.0
+                },
+                "pressure_high_alarm_(bar)": {
+                    "title": "Pressure High Alarm (bar)",
+                    "x-name": "pressure_high_alarm_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Pressure high alarm threshold (bar). Critical alarm.",
+                    "default": 250.0
+                },
+                "pressure_low_alarm_(bar)": {
+                    "title": "Pressure Low Alarm (bar)",
+                    "x-name": "pressure_low_alarm_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Pressure low alarm threshold (bar). Critical alarm.",
+                    "default": 50.0
+                },
+                "dp/dt_alarm_threshold_(bar/s)": {
+                    "title": "dP/dt Alarm Threshold (bar/s)",
+                    "x-name": "dp/dt_alarm_threshold_(bar/s)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Rate of pressure change alarm threshold (bar/s). Critical alarm.",
+                    "default": 10.0
+                },
+                "dp/dt_buffer_size": {
+                    "title": "dP/dt Buffer Size",
+                    "x-name": "dp/dt_buffer_size",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Number of samples in dP/dt rolling buffer. Range 3-20.",
+                    "default": 5,
+                    "minimum": 3,
+                    "maximum": 20
+                },
+                "pt_calibration_drift_threshold_(bar)": {
+                    "title": "PT Calibration Drift Threshold (bar)",
+                    "x-name": "pt_calibration_drift_threshold_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Maximum allowed difference between PT1 and PT2 readings (bar). Warning.",
+                    "default": 5.0
+                },
+                "filter_dp_warning_(bar)": {
+                    "title": "Filter DP Warning (bar)",
+                    "x-name": "filter_dp_warning_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Filter differential pressure warning threshold (bar). Warning.",
+                    "default": 2.0
+                },
+                "filter_dp_fail_(bar)": {
+                    "title": "Filter DP Fail (bar)",
+                    "x-name": "filter_dp_fail_(bar)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Filter differential pressure fail threshold (bar). Critical alarm.",
+                    "default": 4.0
+                },
+                "temperature_high_warning": {
+                    "title": "Temperature High Warning",
+                    "x-name": "temperature_high_warning",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Temperature high warning threshold. Warning.",
+                    "default": 60.0
+                },
+                "temperature_high_alarm": {
+                    "title": "Temperature High Alarm",
+                    "x-name": "temperature_high_alarm",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Temperature high alarm threshold. Critical alarm.",
+                    "default": 80.0
+                },
+                "alarm_grace_period_(s)": {
+                    "title": "Alarm Grace Period (s)",
+                    "x-name": "alarm_grace_period_(s)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Seconds threshold must be sustained before alarm fires",
+                    "default": 5.0
+                },
+                "min_inter-alarm_interval_(s)": {
+                    "title": "Min Inter-Alarm Interval (s)",
+                    "x-name": "min_inter-alarm_interval_(s)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Minimum seconds between repeated alarm triggers",
+                    "default": 60.0
+                },
+                "pump_start_delay_(s)": {
+                    "title": "Pump Start Delay (s)",
+                    "x-name": "pump_start_delay_(s)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Delay in seconds before starting pump after command",
+                    "default": 2.0
+                },
+                "pump_switchover_delay_(s)": {
+                    "title": "Pump Switchover Delay (s)",
+                    "x-name": "pump_switchover_delay_(s)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Delay in seconds before backup pump takes over after primary fault",
+                    "default": 5.0
+                },
+                "pt1_sensor_app": {
                     "format": "doover-application",
-                    "title": "Simulator App Key",
-                    "x-name": "simulator_app_key",
+                    "title": "PT1 Sensor App",
+                    "x-name": "pt1_sensor_app",
                     "x-hidden": false,
                     "type": "string",
-                    "description": "The app key for the simulator"
+                    "description": "PT1 pressure sensor app instance reference"
+                },
+                "pt2_sensor_app": {
+                    "format": "doover-application",
+                    "title": "PT2 Sensor App",
+                    "x-name": "pt2_sensor_app",
+                    "x-hidden": false,
+                    "type": "string",
+                    "description": "PT2 pressure sensor app instance reference (if dual PT)",
+                    "default": null
+                },
+                "filter_dp_sensor_app": {
+                    "format": "doover-application",
+                    "title": "Filter DP Sensor App",
+                    "x-name": "filter_dp_sensor_app",
+                    "x-hidden": false,
+                    "type": "string",
+                    "description": "Filter differential pressure sensor app instance reference",
+                    "default": null
+                },
+                "temperature_sensor_app": {
+                    "format": "doover-application",
+                    "title": "Temperature Sensor App",
+                    "x-name": "temperature_sensor_app",
+                    "x-hidden": false,
+                    "type": "string",
+                    "description": "Temperature sensor app instance reference"
+                },
+                "enable_button_di_pin": {
+                    "title": "Enable Button DI Pin",
+                    "x-name": "enable_button_di_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Digital input pin for system enable button",
+                    "default": 0
+                },
+                "disable_button_di_pin": {
+                    "title": "Disable Button DI Pin",
+                    "x-name": "disable_button_di_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Digital input pin for system disable button",
+                    "default": 1
+                },
+                "master_reset_di_pin": {
+                    "title": "Master Reset DI Pin",
+                    "x-name": "master_reset_di_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Digital input pin for master alarm reset button",
+                    "default": 2
+                },
+                "pump_1_reset_di_pin": {
+                    "title": "Pump 1 Reset DI Pin",
+                    "x-name": "pump_1_reset_di_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Digital input pin for pump 1 fault reset button",
+                    "default": 3
+                },
+                "pump_2_reset_di_pin": {
+                    "title": "Pump 2 Reset DI Pin",
+                    "x-name": "pump_2_reset_di_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Digital input pin for pump 2 fault reset button",
+                    "default": 4
+                },
+                "pt1_enable_di_pin": {
+                    "title": "PT1 Enable DI Pin",
+                    "x-name": "pt1_enable_di_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Digital input pin for PT1 enable/disable toggle",
+                    "default": 5
+                },
+                "vfd_feedback_ai_pin": {
+                    "title": "VFD Feedback AI Pin",
+                    "x-name": "vfd_feedback_ai_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "Analog input pin for VFD speed feedback (0-10V)",
+                    "default": 0
+                },
+                "vfd_minimum_speed_(%)": {
+                    "title": "VFD Minimum Speed (%)",
+                    "x-name": "vfd_minimum_speed_(%)",
+                    "x-hidden": false,
+                    "type": "number",
+                    "description": "Minimum VFD speed percentage",
+                    "default": 10.0
+                },
+                "motor_1_relay_do_pin": {
+                    "title": "Motor 1 Relay DO Pin",
+                    "x-name": "motor_1_relay_do_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "DO pin for Motor 1 relay output",
+                    "default": 0
+                },
+                "motor_2_relay_do_pin": {
+                    "title": "Motor 2 Relay DO Pin",
+                    "x-name": "motor_2_relay_do_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "DO pin for Motor 2 relay output",
+                    "default": 1
+                },
+                "solenoid_valve_do_pin": {
+                    "title": "Solenoid Valve DO Pin",
+                    "x-name": "solenoid_valve_do_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "DO pin for solenoid valve output",
+                    "default": 2
+                },
+                "master_alarm_lamp_do_pin": {
+                    "title": "Master Alarm Lamp DO Pin",
+                    "x-name": "master_alarm_lamp_do_pin",
+                    "x-hidden": false,
+                    "type": "integer",
+                    "description": "DO pin for master alarm lamp output",
+                    "default": 3
+                },
+                "tag_namespace": {
+                    "title": "Tag Namespace",
+                    "x-name": "tag_namespace",
+                    "x-hidden": false,
+                    "type": "string",
+                    "description": "Optional namespace for outbound tags",
+                    "default": null
                 }
             },
             "additionalElements": true,
             "required": [
-                "a_funny_message",
-                "simulator_app_key"
+                "pt1_sensor_app",
+                "temperature_sensor_app"
             ]
-        },
-        "organisation_id": "FIX-ME"
+        }
     }
 }
