@@ -5,7 +5,7 @@ description = "Hydraulic Power Unit controller for Imtex PST systems. Controls h
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pydoover>=0.4.13",
+    "pydoover>=1.5.0",
     "transitions>=0.9.2",
 ]
 
